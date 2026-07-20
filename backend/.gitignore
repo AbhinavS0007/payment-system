@@ -1,0 +1,22 @@
+# Dependencies
+node_modules/
+
+# Environment secrets — NEVER commit these
+.env
+server/.env
+client/.env
+
+# Build output
+dist/
+build/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Mac system files
+.DS_Store
+
+# Editor folders
+.vscode/
+.idea/
