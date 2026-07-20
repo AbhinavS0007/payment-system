@@ -7,7 +7,8 @@ const connectDB = require('./config/db');
 const app = express();
 connectDB();
 
-app.use(cors({ origin: process.env.CLIENT_URL?.split(',') || '*' }));
+// app.use(cors({ origin: process.env.CLIENT_URL?.split(',') || '*' }));
+app.use(cors({ origin: ["http://localhost:5173", "https://your-deployed-frontend.vercel.app"] }))
 app.use(express.json({ limit: '2mb' }));
 
 app.get('/', (req, res) => res.json({ app: 'Blue Isle Payments API', status: 'running' }));
