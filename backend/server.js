@@ -9,20 +9,11 @@ connectDB();
 
 // Allowed origins come from CLIENT_URL env var (comma-separated), e.g.
 // http://localhost:5173,https://payment-system-t42q.vercel.app
-const allowedOrigins = (process.env.CLIENT_URL?.split(',') || [])
-  .map(o => o.trim())
-  .filter(Boolean);
+// const allowedOrigins = (process.env.CLIENT_URL?.split(',') || [])
+//   .map(o => o.trim())
+//   .filter(Boolean);
 
-app.use(cors({
-  origin: function (origin, callback) {
-    // allow requests with no origin (Postman, mobile apps, server-to-server)
-    if (!origin || allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    }
-    return callback(new Error('Not allowed by CORS'));
-  },
-  credentials: true
-}));
+app.use(cors());
 
 app.use(express.json({ limit: '2mb' }));
 
