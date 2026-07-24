@@ -33,7 +33,7 @@ export default function ImageUpload({ label, value, onChange, hint, full }) {
         <input type="file" accept="image/*" capture="environment" onChange={pick} disabled={busy || !enabled} />
       )}
       {busy && <p className="hint">Uploading…</p>}
-      {!enabled && <p className="hint">Image uploads aren’t configured yet.</p>}
+      {!enabled && <p className="hint">Photo upload isn’t available right now.</p>}
       {hint && !value && <p className="hint">{hint}</p>}
       {err && <div className="error" style={{ marginTop: 8 }}>{err}</div>}
     </div>
