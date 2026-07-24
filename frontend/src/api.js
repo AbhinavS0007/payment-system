@@ -41,8 +41,12 @@ export const money = (n) =>
   '₹' + Number(n || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 });
 
 // --- Image uploads (Cloudinary, unsigned) ---
-const CLOUD = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
-const PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+// These two values are public by design for unsigned browser uploads: the cloud
+// name shows up in every delivered image URL, and the unsigned preset is sent by
+// the browser on every upload. Committed as defaults so builds always have them;
+// an env var can still override per-environment.
+const CLOUD = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'dywrjd3bm';
+const PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || 'payment_system_blueisle';
 
 export const uploadsEnabled = () => Boolean(CLOUD && PRESET);
 
