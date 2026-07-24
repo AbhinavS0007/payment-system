@@ -20,6 +20,8 @@ app.use(express.json({ limit: '2mb' }));
 app.get('/', (req, res) => res.json({ app: 'Blue Isle Payments API', status: 'running' }));
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/requests', require('./routes/requests'));
+app.use('/api/request-links', require('./routes/requestLinks'));
+app.use('/api/public', require('./routes/public'));
 app.use('/api/users', require('./routes/users'));
 app.use('/api/dashboard', require('./routes/dashboard'));
 app.use('/api/settings', require('./routes/settings'));

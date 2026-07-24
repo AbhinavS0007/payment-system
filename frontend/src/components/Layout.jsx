@@ -15,6 +15,7 @@ export default function Layout({ children }) {
           {isApprover && <NavLink to="/dashboard">Dashboard</NavLink>}
           <NavLink to="/requests" end>{isApprover ? 'All Requests' : 'My Requests'}</NavLink>
           <NavLink to="/requests/new">New Request</NavLink>
+          <NavLink to="/share">Share Link</NavLink>
           {isApprover && <NavLink to="/approvals">Approvals</NavLink>}
           {user.role === 'admin' && <NavLink to="/users">Team</NavLink>}
           {user.role === 'admin' && <NavLink to="/settings">Settings</NavLink>}

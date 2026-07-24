@@ -33,6 +33,11 @@ const requestSchema = new mongoose.Schema(
 
     requester: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
 
+    // Set when the request was raised through a shared public link.
+    viaLink: { type: Boolean, default: false },
+    submittedByName: { type: String, trim: true },    // the outside person who filled the form
+    submittedByContact: { type: String, trim: true }, // their phone / email (optional)
+
     financeAction: {
       by: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
       at: Date,

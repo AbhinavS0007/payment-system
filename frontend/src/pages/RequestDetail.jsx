@@ -66,8 +66,9 @@ export default function RequestDetail() {
           <div><div className="k">Amount</div><div className="v">{money(r.amount)}</div></div>
           <div><div className="k">Category</div><div className="v">{r.category}</div></div>
           <div><div className="k">Project</div><div className="v">{r.project}</div></div>
-          <div><div className="k">Requested by</div><div className="v">{r.requester?.name}</div></div>
+          <div><div className="k">Requested by</div><div className="v">{r.requester?.name}{r.viaLink && ' (shared link)'}</div></div>
           <div><div className="k">Urgency</div><div className="v">{r.urgency}</div></div>
+          {r.viaLink && <div><div className="k">Filled by</div><div className="v">{r.submittedByName}{r.submittedByContact && ` · ${r.submittedByContact}`}</div></div>}
           {r.payeeDetails && <div><div className="k">Payee details</div><div className="v">{r.payeeDetails}</div></div>}
           <div><div className="k">Approval level</div><div className="v">{r.needsAdmin ? 'Finance + Operations + Admin' : 'Finance + Operations'}</div></div>
         </div>
