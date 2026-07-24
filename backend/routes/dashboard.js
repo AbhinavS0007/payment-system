@@ -6,7 +6,7 @@ const { protect, allow } = require('../middleware/auth');
 router.use(protect);
 
 // GET /api/dashboard/summary  — stats for admin dashboard
-router.get('/summary', allow('finance', 'director'), async (req, res) => {
+router.get('/summary', allow('finance', 'operations', 'admin'), async (req, res) => {
   const now = new Date();
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
@@ -42,13 +42,13 @@ router.get('/summary', allow('finance', 'director'), async (req, res) => {
 });
 
 // GET /api/dashboard/logs  — recent audit trail
-router.get('/logs', allow('finance', 'director'), async (req, res) => {
+router.get('/logs', allow('finance', 'operations', 'admin'), async (req, res) => {
   const logs = await ActivityLog.find().sort({ createdAt: -1 }).limit(100);
   res.json(logs);
 });
 
 // GET /api/dashboard/export  — CSV of all requests
-router.get('/export', allow('finance', 'director'), async (req, res) => {
+router.get('/export', allow('finance', 'operations', 'admin'), async (req, res) => {
   const requests = await Request.find().populate('requester', 'name').sort({ createdAt: -1 });
   const esc = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`;
   const rows = [

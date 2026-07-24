@@ -15,7 +15,7 @@ export default function App() {
   if (loading) return <div className="empty"><h2>Loading…</h2></div>;
   if (!user) return <Login />;
 
-  const isApprover = ['finance', 'director'].includes(user.role);
+  const isApprover = ['finance', 'operations', 'admin'].includes(user.role);
 
   return (
     <Layout>
@@ -26,8 +26,8 @@ export default function App() {
         <Route path="/requests/:id" element={<RequestDetail />} />
         {isApprover && <Route path="/approvals" element={<Approvals />} />}
         {isApprover && <Route path="/dashboard" element={<Dashboard />} />}
-        {user.role === 'director' && <Route path="/users" element={<Users />} />}
-        {user.role === 'director' && <Route path="/settings" element={<Settings />} />}
+        {user.role === 'admin' && <Route path="/users" element={<Users />} />}
+        {user.role === 'admin' && <Route path="/settings" element={<Settings />} />}
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </Layout>

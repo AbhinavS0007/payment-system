@@ -10,8 +10,8 @@ router.get('/', async (req, res) => {
   res.json({ directorThreshold });
 });
 
-// PUT /api/settings  — director only
-router.put('/', allow('director'), async (req, res) => {
+// PUT /api/settings  — admin only
+router.put('/', allow('admin'), async (req, res) => {
   const { directorThreshold } = req.body;
   if (directorThreshold !== undefined) {
     await Setting.set('directorThreshold', Number(directorThreshold));

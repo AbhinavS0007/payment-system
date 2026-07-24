@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import StatusBadge from '../components/StatusBadge';
 
 const CATEGORIES = ['Site Material', 'Labour', 'Subcontractor', 'Office', 'Marketing', 'Travel', 'Misc'];
-const STATUSES = ['draft', 'submitted', 'finance_approved', 'approved', 'sent_back', 'rejected', 'paid', 'closed'];
+const STATUSES = ['draft', 'submitted', 'finance_approved', 'operations_approved', 'approved', 'sent_back', 'rejected', 'paid', 'closed'];
 
 export default function MyRequests() {
   const { user } = useAuth();
@@ -15,7 +15,7 @@ export default function MyRequests() {
   const [status, setStatus] = useState('');
   const [category, setCategory] = useState('');
   const [project, setProject] = useState('');
-  const isApprover = ['finance', 'director'].includes(user.role);
+  const isApprover = ['finance', 'operations', 'admin'].includes(user.role);
 
   const load = () => {
     const q = new URLSearchParams();

@@ -5,7 +5,7 @@ const logSchema = new mongoose.Schema(
   {
     request: { type: mongoose.Schema.Types.ObjectId, ref: 'Request', required: true },
     requestCode: String,
-    action: { type: String, required: true }, // created, submitted, finance_approved, director_approved, rejected, sent_back, paid, closed, edited
+    action: { type: String, required: true }, // created, submitted, finance_approved, operations_approved, admin_approved, rejected, sent_back, paid, closed, edited
     remarks: String,
     by: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     byName: String,

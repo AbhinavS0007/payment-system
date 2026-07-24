@@ -7,7 +7,7 @@ import Journey from '../components/Journey';
 
 const ACTION_LABELS = {
   created: 'Created', submitted: 'Submitted', edited: 'Edited',
-  finance_approved: 'Approved by Finance', director_approved: 'Approved by Director',
+  finance_approved: 'Approved by Finance', operations_approved: 'Approved by Operations', admin_approved: 'Approved by Admin',
   rejected: 'Rejected', sent_back: 'Sent back for changes', paid: 'Payment recorded', closed: 'Closed'
 };
 
@@ -33,7 +33,7 @@ export default function RequestDetail() {
 
   const { request: r } = data;
   const logs = data.logs || [];
-  const isApprover = ['finance', 'director'].includes(user.role);
+  const isApprover = ['finance', 'operations', 'admin'].includes(user.role);
   const isOwner = String(r.requester?._id) === String(user.id);
 
   const act = async (path, body = {}) => {
@@ -69,7 +69,7 @@ export default function RequestDetail() {
           <div><div className="k">Requested by</div><div className="v">{r.requester?.name}</div></div>
           <div><div className="k">Urgency</div><div className="v">{r.urgency}</div></div>
           {r.payeeDetails && <div><div className="k">Payee details</div><div className="v">{r.payeeDetails}</div></div>}
-          {r.needsDirector && <div><div className="k">Approval level</div><div className="v">Finance + Director</div></div>}
+          <div><div className="k">Approval level</div><div className="v">{r.needsAdmin ? 'Finance + Operations + Admin' : 'Finance + Operations'}</div></div>
         </div>
         {r.description && <p style={{ marginTop: 14, color: '#555' }}>{r.description}</p>}
         {r.attachmentUrl && (
@@ -103,7 +103,7 @@ export default function RequestDetail() {
       )}
 
       {/* Finance review */}
-      {isApprover && r.status === 'submitted' && (
+      {['finance', 'admin'].includes(user.role) && r.status === 'submitted' && (
         <div className="card">
           <h2>Finance review</h2>
           <div className="field" style={{ marginTop: 10 }}>
@@ -115,25 +115,48 @@ export default function RequestDetail() {
             <button className="btn ghost" onClick={() => decide('finance', 'send_back')} disabled={busy}>Send back</button>
             <button className="btn danger" onClick={() => decide('finance', 'reject')} disabled={busy}>Reject</button>
           </div>
-          {r.needsDirector && <p style={{ marginTop: 10, fontSize: 13, color: '#8b5e3c' }}>
-            Above threshold — Director approval will also be required.
-          </p>}
+          <p style={{ marginTop: 10, fontSize: 13, color: '#8b5e3c' }}>
+            {r.needsAdmin
+              ? 'Next: Operations, then Admin approval (above threshold).'
+              : 'Next: Operations approval.'}
+          </p>
         </div>
       )}
 
-      {/* Director review */}
-      {user.role === 'director' && r.status === 'finance_approved' && (
+      {/* Operations review */}
+      {['operations', 'admin'].includes(user.role) && r.status === 'finance_approved' && (
         <div className="card">
-          <h2>Director approval</h2>
+          <h2>Operations approval</h2>
           {r.financeAction?.remarks && <p style={{ margin: '8px 0' }}>Finance remarks: <b>{r.financeAction.remarks}</b></p>}
           <div className="field" style={{ marginTop: 10 }}>
             <label>Remarks</label>
             <textarea rows="2" value={remarks} onChange={(e) => setRemarks(e.target.value)} />
           </div>
           <div className="btn-row">
-            <button className="btn sage" onClick={() => decide('director', 'approve')} disabled={busy}>Approve</button>
-            <button className="btn ghost" onClick={() => decide('director', 'send_back')} disabled={busy}>Send back</button>
-            <button className="btn danger" onClick={() => decide('director', 'reject')} disabled={busy}>Reject</button>
+            <button className="btn sage" onClick={() => decide('operations', 'approve')} disabled={busy}>Approve</button>
+            <button className="btn ghost" onClick={() => decide('operations', 'send_back')} disabled={busy}>Send back</button>
+            <button className="btn danger" onClick={() => decide('operations', 'reject')} disabled={busy}>Reject</button>
+          </div>
+          {r.needsAdmin && <p style={{ marginTop: 10, fontSize: 13, color: '#8b5e3c' }}>
+            Above threshold — Admin approval will also be required after this.
+          </p>}
+        </div>
+      )}
+
+      {/* Admin review */}
+      {user.role === 'admin' && r.status === 'operations_approved' && (
+        <div className="card">
+          <h2>Admin approval</h2>
+          {r.financeAction?.remarks && <p style={{ margin: '8px 0' }}>Finance remarks: <b>{r.financeAction.remarks}</b></p>}
+          {r.operationsAction?.remarks && <p style={{ margin: '8px 0' }}>Operations remarks: <b>{r.operationsAction.remarks}</b></p>}
+          <div className="field" style={{ marginTop: 10 }}>
+            <label>Remarks</label>
+            <textarea rows="2" value={remarks} onChange={(e) => setRemarks(e.target.value)} />
+          </div>
+          <div className="btn-row">
+            <button className="btn sage" onClick={() => decide('admin', 'approve')} disabled={busy}>Approve</button>
+            <button className="btn ghost" onClick={() => decide('admin', 'send_back')} disabled={busy}>Send back</button>
+            <button className="btn danger" onClick={() => decide('admin', 'reject')} disabled={busy}>Reject</button>
           </div>
         </div>
       )}

@@ -13,11 +13,13 @@ export default function Approvals() {
   useEffect(() => {
     api.get('/api/requests')
       .then((all) => {
-        const pending = all.filter((r) =>
-          r.status === 'submitted' ||
-          (user.role === 'director' && r.status === 'finance_approved') ||
-          r.status === 'approved'
-        );
+        const pending = all.filter((r) => {
+          if (r.status === 'submitted') return ['finance', 'admin'].includes(user.role);
+          if (r.status === 'finance_approved') return ['operations', 'admin'].includes(user.role);
+          if (r.status === 'operations_approved') return user.role === 'admin';
+          if (r.status === 'approved') return true;
+          return false;
+        });
         setRows(pending);
       })
       .catch((e) => { setError(e.message); setRows([]); });

@@ -2,10 +2,11 @@ const mongoose = require('mongoose');
 
 const STATUSES = [
   'draft',
-  'submitted',            // awaiting finance
-  'finance_approved',     // awaiting director (only if above threshold)
-  'approved',             // fully approved, awaiting payment
-  'sent_back',            // returned to employee for edits
+  'submitted',              // awaiting finance
+  'finance_approved',       // awaiting operations
+  'operations_approved',    // awaiting admin (only if above threshold)
+  'approved',               // fully approved, awaiting payment
+  'sent_back',              // returned to employee for edits
   'rejected',
   'paid',
   'closed'
@@ -28,7 +29,7 @@ const requestSchema = new mongoose.Schema(
     attachmentUrl: String, // Cloudinary / Drive link to invoice or quotation
 
     status: { type: String, enum: STATUSES, default: 'draft' },
-    needsDirector: { type: Boolean, default: false },
+    needsAdmin: { type: Boolean, default: false },
 
     requester: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
 
@@ -37,7 +38,12 @@ const requestSchema = new mongoose.Schema(
       at: Date,
       remarks: String
     },
-    directorAction: {
+    operationsAction: {
+      by: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+      at: Date,
+      remarks: String
+    },
+    adminAction: {
       by: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
       at: Date,
       remarks: String

@@ -1,13 +1,14 @@
 // The lifecycle strip - shows where a request stands on its path to payment
 export default function Journey({ request }) {
-  const steps = ['Submitted', 'Finance', ...(request.needsDirector ? ['Director'] : []), 'Paid', 'Closed'];
+  const steps = ['Submitted', 'Finance', 'Operations', ...(request.needsAdmin ? ['Admin'] : []), 'Paid', 'Closed'];
 
   const reached = (() => {
     const s = request.status;
     if (s === 'draft' || s === 'sent_back') return 0;
     if (s === 'submitted') return 1;
     if (s === 'finance_approved') return 2;
-    if (s === 'approved') return request.needsDirector ? 3 : 2;
+    if (s === 'operations_approved') return 3;
+    if (s === 'approved') return request.needsAdmin ? 4 : 3;
     if (s === 'paid') return steps.length - 1;
     if (s === 'closed') return steps.length;
     return 0; // rejected shown via badge

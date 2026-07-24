@@ -49,7 +49,8 @@ export default function Users() {
             <select value={f.role} onChange={(e) => setF({ ...f, role: e.target.value })}>
               <option value="employee">Employee</option>
               <option value="finance">Finance</option>
-              <option value="director">Director</option>
+              <option value="operations">Operations</option>
+              <option value="admin">Admin</option>
             </select></div>
         </div>
         <div className="btn-row"><button className="btn gold" onClick={create}>Create account</button></div>
@@ -67,7 +68,8 @@ export default function Users() {
                   <select value={u.role} onChange={(e) => changeRole(u, e.target.value)} style={{ width: 130 }}>
                     <option value="employee">Employee</option>
                     <option value="finance">Finance</option>
-                    <option value="director">Director</option>
+                    <option value="operations">Operations</option>
+                    <option value="admin">Admin</option>
                   </select>
                 </td>
                 <td>{u.active ? <span className="badge approved">Active</span> : <span className="badge rejected">Deactivated</span>}</td>

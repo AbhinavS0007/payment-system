@@ -21,10 +21,11 @@ const populated = (query) =>
   query
     .populate('requester', 'name email role')
     .populate('financeAction.by', 'name')
-    .populate('directorAction.by', 'name')
+    .populate('operationsAction.by', 'name')
+    .populate('adminAction.by', 'name')
     .populate('payment.by', 'name');
 
-// GET /api/requests  — employees see their own; finance/director see all
+// GET /api/requests  — employees see their own; finance/operations/admin see all
 router.get('/', async (req, res) => {
   const { status, category, project, from, to } = req.query;
   const filter = {};
@@ -62,7 +63,7 @@ router.post('/', async (req, res) => {
   const request = await Request.create({
     payeeName, payeeDetails, amount, category, project, urgency, description, attachmentUrl,
     requester: req.user._id,
-    needsDirector: amount > threshold,
+    needsAdmin: amount > threshold,
     status: submit ? 'submitted' : 'draft'
   });
   await log(request, 'created', req.user);
@@ -83,7 +84,7 @@ router.put('/:id', async (req, res) => {
   const fields = ['payeeName', 'payeeDetails', 'amount', 'category', 'project', 'urgency', 'description', 'attachmentUrl'];
   fields.forEach((f) => { if (req.body[f] !== undefined) request[f] = req.body[f]; });
   const threshold = await Setting.get('directorThreshold', 50000);
-  request.needsDirector = request.amount > threshold;
+  request.needsAdmin = request.amount > threshold;
   await request.save();
   await log(request, 'edited', req.user);
   res.json(request);
@@ -101,14 +102,15 @@ router.post('/:id/submit', async (req, res) => {
   }
   request.status = 'submitted';
   request.financeAction = undefined;
-  request.directorAction = undefined;
+  request.operationsAction = undefined;
+  request.adminAction = undefined;
   await request.save();
   await log(request, 'submitted', req.user, req.body.remarks);
   res.json(request);
 });
 
-// POST /api/requests/:id/finance  — approve | reject | send_back (finance or director)
-router.post('/:id/finance', allow('finance', 'director'), async (req, res) => {
+// POST /api/requests/:id/finance  — approve | reject | send_back (finance or admin)
+router.post('/:id/finance', allow('finance', 'admin'), async (req, res) => {
   const { decision, remarks } = req.body; // approve | reject | send_back
   const request = await Request.findById(req.params.id);
   if (!request) return res.status(404).json({ message: 'Request not found.' });
@@ -117,7 +119,7 @@ router.post('/:id/finance', allow('finance', 'director'), async (req, res) => {
   }
   request.financeAction = { by: req.user._id, at: new Date(), remarks };
   if (decision === 'approve') {
-    request.status = request.needsDirector ? 'finance_approved' : 'approved';
+    request.status = 'finance_approved';
     await log(request, 'finance_approved', req.user, remarks);
   } else if (decision === 'reject') {
     request.status = 'rejected';
@@ -132,18 +134,18 @@ router.post('/:id/finance', allow('finance', 'director'), async (req, res) => {
   res.json(request);
 });
 
-// POST /api/requests/:id/director  — second-level approval (director only)
-router.post('/:id/director', allow('director'), async (req, res) => {
+// POST /api/requests/:id/operations  — operations approval (operations or admin)
+router.post('/:id/operations', allow('operations', 'admin'), async (req, res) => {
   const { decision, remarks } = req.body;
   const request = await Request.findById(req.params.id);
   if (!request) return res.status(404).json({ message: 'Request not found.' });
   if (request.status !== 'finance_approved') {
-    return res.status(400).json({ message: 'This request is not awaiting director approval.' });
+    return res.status(400).json({ message: 'This request is not awaiting operations review.' });
   }
-  request.directorAction = { by: req.user._id, at: new Date(), remarks };
+  request.operationsAction = { by: req.user._id, at: new Date(), remarks };
   if (decision === 'approve') {
-    request.status = 'approved';
-    await log(request, 'director_approved', req.user, remarks);
+    request.status = request.needsAdmin ? 'operations_approved' : 'approved';
+    await log(request, 'operations_approved', req.user, remarks);
   } else if (decision === 'reject') {
     request.status = 'rejected';
     await log(request, 'rejected', req.user, remarks);
@@ -157,8 +159,33 @@ router.post('/:id/director', allow('director'), async (req, res) => {
   res.json(request);
 });
 
-// POST /api/requests/:id/pay  — record payment (finance or director)
-router.post('/:id/pay', allow('finance', 'director'), async (req, res) => {
+// POST /api/requests/:id/admin  — final approval for above-threshold requests (admin only)
+router.post('/:id/admin', allow('admin'), async (req, res) => {
+  const { decision, remarks } = req.body;
+  const request = await Request.findById(req.params.id);
+  if (!request) return res.status(404).json({ message: 'Request not found.' });
+  if (request.status !== 'operations_approved') {
+    return res.status(400).json({ message: 'This request is not awaiting admin approval.' });
+  }
+  request.adminAction = { by: req.user._id, at: new Date(), remarks };
+  if (decision === 'approve') {
+    request.status = 'approved';
+    await log(request, 'admin_approved', req.user, remarks);
+  } else if (decision === 'reject') {
+    request.status = 'rejected';
+    await log(request, 'rejected', req.user, remarks);
+  } else if (decision === 'send_back') {
+    request.status = 'sent_back';
+    await log(request, 'sent_back', req.user, remarks);
+  } else {
+    return res.status(400).json({ message: 'Decision must be approve, reject or send_back.' });
+  }
+  await request.save();
+  res.json(request);
+});
+
+// POST /api/requests/:id/pay  — record payment (finance, operations or admin)
+router.post('/:id/pay', allow('finance', 'operations', 'admin'), async (req, res) => {
   const { date, mode, reference, proofUrl } = req.body;
   const request = await Request.findById(req.params.id);
   if (!request) return res.status(404).json({ message: 'Request not found.' });
@@ -175,8 +202,8 @@ router.post('/:id/pay', allow('finance', 'director'), async (req, res) => {
   res.json(request);
 });
 
-// POST /api/requests/:id/close  — close after payment (finance or director)
-router.post('/:id/close', allow('finance', 'director'), async (req, res) => {
+// POST /api/requests/:id/close  — close after payment (finance, operations or admin)
+router.post('/:id/close', allow('finance', 'operations', 'admin'), async (req, res) => {
   const request = await Request.findById(req.params.id);
   if (!request) return res.status(404).json({ message: 'Request not found.' });
   if (request.status !== 'paid') {

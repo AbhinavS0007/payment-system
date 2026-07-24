@@ -3,7 +3,7 @@ const bcrypt = require('bcryptjs');
 const User = require('../models/User');
 const { protect, allow } = require('../middleware/auth');
 
-router.use(protect, allow('director'));
+router.use(protect, allow('admin'));
 
 // GET /api/users
 router.get('/', async (req, res) => {

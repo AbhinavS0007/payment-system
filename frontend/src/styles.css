@@ -109,6 +109,7 @@ tr.clickable:hover td { background: var(--ivory); }
 .badge.draft { background: var(--sand); color: var(--charcoal); }
 .badge.submitted { background: #f3e8c8; color: #8a6d00; }
 .badge.finance_approved { background: #e8edd8; color: #5a6b3f; }
+.badge.operations_approved { background: #dbe6e4; color: #35544f; }
 .badge.approved { background: var(--sage); color: #2e3a24; }
 .badge.sent_back { background: #f5e0d3; color: var(--teak); }
 .badge.rejected { background: #f2d6cf; color: var(--danger); }

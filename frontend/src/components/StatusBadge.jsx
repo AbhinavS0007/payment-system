@@ -1,7 +1,8 @@
 const LABELS = {
   draft: 'Draft',
   submitted: 'Awaiting Finance',
-  finance_approved: 'Awaiting Director',
+  finance_approved: 'Awaiting Operations',
+  operations_approved: 'Awaiting Admin',
   approved: 'Approved · To Pay',
   sent_back: 'Sent Back',
   rejected: 'Rejected',

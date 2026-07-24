@@ -15,7 +15,7 @@ export default function Settings() {
     try {
       const s = await api.put('/api/settings', { directorThreshold: Number(threshold) });
       setThreshold(s.directorThreshold);
-      setOk(`Saved. Requests above ${money(s.directorThreshold)} now need Director approval.`);
+      setOk(`Saved. Requests above ${money(s.directorThreshold)} now need Admin approval.`);
     } catch (e) { setError(e.message); }
   };
 
@@ -23,9 +23,9 @@ export default function Settings() {
     <>
       <div className="page-head"><h1>Settings</h1></div>
       <div className="card">
-        <h2>Director approval threshold</h2>
+        <h2>Admin approval threshold</h2>
         <p style={{ margin: '8px 0 14px', color: '#555' }}>
-          Requests above this amount need your approval in addition to Finance.
+          Requests above this amount need Admin approval in addition to Finance and Operations.
         </p>
         {error && <div className="error">{error}</div>}
         {ok && <div className="success">{ok}</div>}
