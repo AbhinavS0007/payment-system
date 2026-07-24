@@ -96,16 +96,15 @@ export default function PublicSubmit() {
           <label>Payee name *</label>
           <input value={f.payeeName} onChange={set('payeeName')} placeholder="e.g. Sharma Hardware" />
         </div>
-        <div className="field">
+        <div className="field full">
           <label>Payee UPI / bank details</label>
           <input value={f.payeeDetails} onChange={set('payeeDetails')} placeholder="UPI ID or A/c + IFSC" />
+          <ImageUpload
+            caption="…or add the payee's UPI QR — take a photo or upload one, so the team can pay by scanning it."
+            value={f.payeeQrUrl}
+            onChange={setVal('payeeQrUrl')}
+          />
         </div>
-        <ImageUpload
-          label="Payee UPI QR (photo)"
-          value={f.payeeQrUrl}
-          onChange={setVal('payeeQrUrl')}
-          hint="Upload/scan the payee's QR so the team can pay by scanning."
-        />
         <div className="field">
           <label>Amount (₹) *</label>
           <input type="number" min="1" value={f.amount} onChange={set('amount')} placeholder="12500" />
@@ -135,16 +134,16 @@ export default function PublicSubmit() {
           <textarea rows="3" value={f.description} onChange={set('description')}
             placeholder="Brief note — e.g. 2nd instalment for modular kitchen carcass material" />
         </div>
-        <div className="field">
-          <label>Invoice / quotation link</label>
+        <div className="field full">
+          <label>Invoice / quotation</label>
           <input value={f.attachmentUrl} onChange={set('attachmentUrl')}
             placeholder="Paste a Drive / photo link of the bill" />
+          <ImageUpload
+            caption="…or upload / photograph the bill directly."
+            value={f.billPhotoUrl}
+            onChange={setVal('billPhotoUrl')}
+          />
         </div>
-        <ImageUpload
-          label="Or upload a photo of the bill"
-          value={f.billPhotoUrl}
-          onChange={setVal('billPhotoUrl')}
-        />
       </div>
       <div className="btn-row">
         <button className="btn gold" style={{ width: '100%' }} onClick={submit} disabled={busy}>
