@@ -1,19 +1,27 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api';
-
-const CATEGORIES = ['Site Material', 'Labour', 'Subcontractor', 'Office', 'Marketing', 'Travel', 'Misc'];
+import ImageUpload from '../components/ImageUpload';
 
 export default function NewRequest() {
   const nav = useNavigate();
+  const [categories, setCategories] = useState([]);
+  const [projects, setProjects] = useState([]);
   const [f, setF] = useState({
-    payeeName: '', payeeDetails: '', amount: '', category: 'Site Material',
-    project: '', urgency: 'Normal', description: '', attachmentUrl: ''
+    payeeName: '', payeeDetails: '', payeeQrUrl: '', amount: '', category: '',
+    project: '', urgency: 'Normal', description: '', attachmentUrl: '', billPhotoUrl: ''
   });
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
 
+  useEffect(() => {
+    Promise.all([api.get('/api/categories'), api.get('/api/projects')])
+      .then(([c, p]) => { setCategories(c.map((x) => x.name)); setProjects(p.map((x) => x.name)); })
+      .catch((e) => setError(e.message));
+  }, []);
+
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
+  const setVal = (k) => (v) => setF({ ...f, [k]: v });
 
   const save = async (submit) => {
     setError('');
@@ -41,6 +49,12 @@ export default function NewRequest() {
             <label>Payee UPI / bank details</label>
             <input value={f.payeeDetails} onChange={set('payeeDetails')} placeholder="UPI ID or A/c + IFSC" />
           </div>
+          <ImageUpload
+            label="Payee UPI QR (photo)"
+            value={f.payeeQrUrl}
+            onChange={setVal('payeeQrUrl')}
+            hint="Upload/scan the payee's QR so operations can pay by scanning."
+          />
           <div className="field">
             <label>Amount (₹) *</label>
             <input type="number" min="1" value={f.amount} onChange={set('amount')} placeholder="12500" />
@@ -48,12 +62,17 @@ export default function NewRequest() {
           <div className="field">
             <label>Category *</label>
             <select value={f.category} onChange={set('category')}>
-              {CATEGORIES.map((c) => <option key={c}>{c}</option>)}
+              <option value="">Select a category…</option>
+              {categories.map((c) => <option key={c}>{c}</option>)}
             </select>
           </div>
           <div className="field">
             <label>Project / site *</label>
-            <input value={f.project} onChange={set('project')} placeholder="e.g. Kharghuli Residence" />
+            <select value={f.project} onChange={set('project')}>
+              <option value="">Select a project…</option>
+              {projects.map((p) => <option key={p}>{p}</option>)}
+            </select>
+            {projects.length === 0 && <p className="hint">No projects yet — an operations/admin user needs to add one under Manage Lists.</p>}
           </div>
           <div className="field">
             <label>Urgency</label>
@@ -66,11 +85,16 @@ export default function NewRequest() {
             <textarea rows="3" value={f.description} onChange={set('description')}
               placeholder="Brief note — e.g. 2nd instalment for modular kitchen carcass material" />
           </div>
-          <div className="field full">
+          <div className="field">
             <label>Invoice / quotation link</label>
             <input value={f.attachmentUrl} onChange={set('attachmentUrl')}
               placeholder="Paste a Drive / photo link of the bill" />
           </div>
+          <ImageUpload
+            label="Or upload a photo of the bill"
+            value={f.billPhotoUrl}
+            onChange={setVal('billPhotoUrl')}
+          />
         </div>
         <div className="btn-row">
           <button className="btn gold" onClick={() => save(true)} disabled={busy}>Submit for approval</button>

@@ -73,6 +73,22 @@ export default function RequestDetail() {
           <div><div className="k">Approval level</div><div className="v">{r.needsAdmin ? 'Finance + Operations + Admin' : 'Finance + Operations'}</div></div>
         </div>
         {r.description && <p style={{ marginTop: 14, color: '#555' }}>{r.description}</p>}
+        {(r.payeeQrUrl || r.billPhotoUrl) && (
+          <div className="attach-row">
+            {r.payeeQrUrl && (
+              <div className="attach">
+                <div className="k">Payee QR — scan to pay</div>
+                <a href={r.payeeQrUrl} target="_blank" rel="noreferrer"><img src={r.payeeQrUrl} alt="Payee QR" /></a>
+              </div>
+            )}
+            {r.billPhotoUrl && (
+              <div className="attach">
+                <div className="k">Bill photo</div>
+                <a href={r.billPhotoUrl} target="_blank" rel="noreferrer"><img src={r.billPhotoUrl} alt="Bill" /></a>
+              </div>
+            )}
+          </div>
+        )}
         {r.attachmentUrl && (
           <p style={{ marginTop: 10 }}>
             <a href={r.attachmentUrl} target="_blank" rel="noreferrer">View attached invoice / quotation ↗</a>

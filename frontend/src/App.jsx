@@ -10,6 +10,7 @@ import Dashboard from './pages/Dashboard';
 import Users from './pages/Users';
 import Settings from './pages/Settings';
 import ShareLinks from './pages/ShareLinks';
+import ManageLists from './pages/ManageLists';
 import PublicSubmit from './pages/PublicSubmit';
 
 export default function App() {
@@ -29,6 +30,7 @@ export default function App() {
   if (!user) return <Login />;
 
   const isApprover = ['finance', 'operations', 'admin'].includes(user.role);
+  const canManageLists = ['operations', 'admin'].includes(user.role);
 
   return (
     <Layout>
@@ -38,6 +40,7 @@ export default function App() {
         <Route path="/requests/new" element={<NewRequest />} />
         <Route path="/requests/:id" element={<RequestDetail />} />
         <Route path="/share" element={<ShareLinks />} />
+        {canManageLists && <Route path="/lists" element={<ManageLists />} />}
         {isApprover && <Route path="/approvals" element={<Approvals />} />}
         {isApprover && <Route path="/dashboard" element={<Dashboard />} />}
         {user.role === 'admin' && <Route path="/users" element={<Users />} />}

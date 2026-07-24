@@ -1,28 +1,35 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { api } from '../api';
-
-const CATEGORIES = ['Site Material', 'Labour', 'Subcontractor', 'Office', 'Marketing', 'Travel', 'Misc'];
+import ImageUpload from '../components/ImageUpload';
 
 export default function PublicSubmit() {
   const { token } = useParams();
   const [state, setState] = useState('loading'); // loading | invalid | form | done
   const [message, setMessage] = useState('');
   const [generatedBy, setGeneratedBy] = useState('');
+  const [categories, setCategories] = useState([]);
+  const [projects, setProjects] = useState([]);
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [f, setF] = useState({
     submittedByName: '', submittedByContact: '',
-    payeeName: '', payeeDetails: '', amount: '', category: 'Site Material',
-    project: '', urgency: 'Normal', description: '', attachmentUrl: ''
+    payeeName: '', payeeDetails: '', payeeQrUrl: '', amount: '', category: '',
+    project: '', urgency: 'Normal', description: '', attachmentUrl: '', billPhotoUrl: ''
   });
 
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
+  const setVal = (k) => (v) => setF({ ...f, [k]: v });
 
   useEffect(() => {
     api.get(`/api/public/request-form/${token}`)
-      .then((d) => { setGeneratedBy(d.generatedByName); setState('form'); })
+      .then((d) => {
+        setGeneratedBy(d.generatedByName);
+        setCategories(d.categories || []);
+        setProjects(d.projects || []);
+        setState('form');
+      })
       .catch((e) => { setMessage(e.message); setState('invalid'); });
   }, [token]);
 
@@ -93,6 +100,12 @@ export default function PublicSubmit() {
           <label>Payee UPI / bank details</label>
           <input value={f.payeeDetails} onChange={set('payeeDetails')} placeholder="UPI ID or A/c + IFSC" />
         </div>
+        <ImageUpload
+          label="Payee UPI QR (photo)"
+          value={f.payeeQrUrl}
+          onChange={setVal('payeeQrUrl')}
+          hint="Upload/scan the payee's QR so the team can pay by scanning."
+        />
         <div className="field">
           <label>Amount (₹) *</label>
           <input type="number" min="1" value={f.amount} onChange={set('amount')} placeholder="12500" />
@@ -100,12 +113,16 @@ export default function PublicSubmit() {
         <div className="field">
           <label>Category *</label>
           <select value={f.category} onChange={set('category')}>
-            {CATEGORIES.map((c) => <option key={c}>{c}</option>)}
+            <option value="">Select a category…</option>
+            {categories.map((c) => <option key={c}>{c}</option>)}
           </select>
         </div>
         <div className="field">
           <label>Project / site *</label>
-          <input value={f.project} onChange={set('project')} placeholder="e.g. Kharghuli Residence" />
+          <select value={f.project} onChange={set('project')}>
+            <option value="">Select a project…</option>
+            {projects.map((p) => <option key={p}>{p}</option>)}
+          </select>
         </div>
         <div className="field">
           <label>Urgency</label>
@@ -118,11 +135,16 @@ export default function PublicSubmit() {
           <textarea rows="3" value={f.description} onChange={set('description')}
             placeholder="Brief note — e.g. 2nd instalment for modular kitchen carcass material" />
         </div>
-        <div className="field full">
+        <div className="field">
           <label>Invoice / quotation link</label>
           <input value={f.attachmentUrl} onChange={set('attachmentUrl')}
             placeholder="Paste a Drive / photo link of the bill" />
         </div>
+        <ImageUpload
+          label="Or upload a photo of the bill"
+          value={f.billPhotoUrl}
+          onChange={setVal('billPhotoUrl')}
+        />
       </div>
       <div className="btn-row">
         <button className="btn gold" style={{ width: '100%' }} onClick={submit} disabled={busy}>

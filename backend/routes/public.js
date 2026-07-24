@@ -3,6 +3,9 @@ const RequestLink = require('../models/RequestLink');
 const Request = require('../models/Request');
 const ActivityLog = require('../models/ActivityLog');
 const Setting = require('../models/Setting');
+const Category = require('../models/Category');
+const Project = require('../models/Project');
+const validateLists = require('../utils/validateLists');
 
 // NOTE: these routes are intentionally unauthenticated — reached via an
 // unguessable one-time token only. No `protect` middleware here.
@@ -15,11 +18,21 @@ const findActive = async (token) => {
   return { link };
 };
 
-// GET /api/public/request-form/:token  — validate the link and reveal who issued it
+// GET /api/public/request-form/:token  — validate the link, reveal the issuer, and
+// return the managed project/category lists to populate the dropdowns
 router.get('/request-form/:token', async (req, res) => {
   const { link, error, message } = await findActive(req.params.token);
   if (error) return res.status(error).json({ message });
-  res.json({ valid: true, generatedByName: link.createdByName });
+  const [categories, projects] = await Promise.all([
+    Category.find().sort({ name: 1 }).select('name'),
+    Project.find().sort({ name: 1 }).select('name')
+  ]);
+  res.json({
+    valid: true,
+    generatedByName: link.createdByName,
+    categories: categories.map((c) => c.name),
+    projects: projects.map((p) => p.name)
+  });
 });
 
 // POST /api/public/request-form/:token  — submit a payment request on behalf of the issuer
@@ -28,7 +41,7 @@ router.post('/request-form/:token', async (req, res) => {
   if (error) return res.status(error).json({ message });
 
   const {
-    payeeName, payeeDetails, amount, category, project, urgency, description, attachmentUrl,
+    payeeName, payeeDetails, payeeQrUrl, amount, category, project, urgency, description, attachmentUrl, billPhotoUrl,
     submittedByName, submittedByContact
   } = req.body;
 
@@ -38,10 +51,12 @@ router.post('/request-form/:token', async (req, res) => {
   if (!payeeName || !amount || !category || !project) {
     return res.status(400).json({ message: 'Payee, amount, category and project are required.' });
   }
+  const listError = await validateLists(category, project);
+  if (listError) return res.status(400).json({ message: listError });
 
   const threshold = await Setting.get('directorThreshold', 50000);
   const request = await Request.create({
-    payeeName, payeeDetails, amount, category, project, urgency, description, attachmentUrl,
+    payeeName, payeeDetails, payeeQrUrl, amount, category, project, urgency, description, attachmentUrl, billPhotoUrl,
     requester: link.createdBy,
     viaLink: true,
     submittedByName,

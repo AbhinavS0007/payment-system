@@ -17,16 +17,14 @@ const requestSchema = new mongoose.Schema(
     code: { type: String, unique: true }, // BI-PAY-2026-001
     payeeName: { type: String, required: true, trim: true },
     payeeDetails: { type: String, trim: true }, // UPI / bank account
+    payeeQrUrl: String, // uploaded photo of the payee's UPI QR — operations scans it to pay
     amount: { type: Number, required: true, min: 1 },
-    category: {
-      type: String,
-      enum: ['Site Material', 'Labour', 'Subcontractor', 'Office', 'Marketing', 'Travel', 'Misc'],
-      required: true
-    },
-    project: { type: String, required: true, trim: true },
+    category: { type: String, required: true, trim: true }, // validated against managed Category list
+    project: { type: String, required: true, trim: true }, // validated against managed Project list
     urgency: { type: String, enum: ['Normal', 'Urgent'], default: 'Normal' },
     description: { type: String, trim: true },
-    attachmentUrl: String, // Cloudinary / Drive link to invoice or quotation
+    attachmentUrl: String, // Drive / link to invoice or quotation
+    billPhotoUrl: String,  // uploaded photo of the bill
 
     status: { type: String, enum: STATUSES, default: 'draft' },
     needsAdmin: { type: Boolean, default: false },

@@ -4,7 +4,6 @@ import { api, money } from '../api';
 import { useAuth } from '../context/AuthContext';
 import StatusBadge from '../components/StatusBadge';
 
-const CATEGORIES = ['Site Material', 'Labour', 'Subcontractor', 'Office', 'Marketing', 'Travel', 'Misc'];
 const STATUSES = ['draft', 'submitted', 'finance_approved', 'operations_approved', 'approved', 'sent_back', 'rejected', 'paid', 'closed'];
 
 export default function MyRequests() {
@@ -15,7 +14,12 @@ export default function MyRequests() {
   const [status, setStatus] = useState('');
   const [category, setCategory] = useState('');
   const [project, setProject] = useState('');
+  const [categories, setCategories] = useState([]);
   const isApprover = ['finance', 'operations', 'admin'].includes(user.role);
+
+  useEffect(() => {
+    api.get('/api/categories').then((c) => setCategories(c.map((x) => x.name))).catch(() => {});
+  }, []);
 
   const load = () => {
     const q = new URLSearchParams();
@@ -44,7 +48,7 @@ export default function MyRequests() {
         </select>
         <select value={category} onChange={(e) => setCategory(e.target.value)}>
           <option value="">All categories</option>
-          {CATEGORIES.map((c) => <option key={c}>{c}</option>)}
+          {categories.map((c) => <option key={c}>{c}</option>)}
         </select>
         <input placeholder="Filter by project…" value={project} onChange={(e) => setProject(e.target.value)} />
       </div>

@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 export default function Layout({ children }) {
   const { user, logout } = useAuth();
   const isApprover = ['finance', 'operations', 'admin'].includes(user.role);
+  const canManageLists = ['operations', 'admin'].includes(user.role);
   const roleLabel = { employee: 'Team Member', finance: 'Finance', operations: 'Operations', admin: 'Admin' }[user.role];
 
   return (
@@ -17,6 +18,7 @@ export default function Layout({ children }) {
           <NavLink to="/requests/new">New Request</NavLink>
           <NavLink to="/share">Share Link</NavLink>
           {isApprover && <NavLink to="/approvals">Approvals</NavLink>}
+          {canManageLists && <NavLink to="/lists">Manage Lists</NavLink>}
           {user.role === 'admin' && <NavLink to="/users">Team</NavLink>}
           {user.role === 'admin' && <NavLink to="/settings">Settings</NavLink>}
         </nav>

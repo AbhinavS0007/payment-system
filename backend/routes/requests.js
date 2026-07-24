@@ -2,6 +2,7 @@ const router = require('express').Router();
 const Request = require('../models/Request');
 const ActivityLog = require('../models/ActivityLog');
 const Setting = require('../models/Setting');
+const validateLists = require('../utils/validateLists');
 const { protect, allow } = require('../middleware/auth');
 
 router.use(protect);
@@ -55,13 +56,15 @@ router.get('/:id', async (req, res) => {
 
 // POST /api/requests  — create (draft or submit directly)
 router.post('/', async (req, res) => {
-  const { payeeName, payeeDetails, amount, category, project, urgency, description, attachmentUrl, submit } = req.body;
+  const { payeeName, payeeDetails, payeeQrUrl, amount, category, project, urgency, description, attachmentUrl, billPhotoUrl, submit } = req.body;
   if (!payeeName || !amount || !category || !project) {
     return res.status(400).json({ message: 'Payee, amount, category and project are required.' });
   }
+  const listError = await validateLists(category, project);
+  if (listError) return res.status(400).json({ message: listError });
   const threshold = await Setting.get('directorThreshold', 50000);
   const request = await Request.create({
-    payeeName, payeeDetails, amount, category, project, urgency, description, attachmentUrl,
+    payeeName, payeeDetails, payeeQrUrl, amount, category, project, urgency, description, attachmentUrl, billPhotoUrl,
     requester: req.user._id,
     needsAdmin: amount > threshold,
     status: submit ? 'submitted' : 'draft'
@@ -81,8 +84,10 @@ router.put('/:id', async (req, res) => {
   if (!['draft', 'sent_back'].includes(request.status)) {
     return res.status(400).json({ message: 'Only drafts or sent-back requests can be edited.' });
   }
-  const fields = ['payeeName', 'payeeDetails', 'amount', 'category', 'project', 'urgency', 'description', 'attachmentUrl'];
+  const fields = ['payeeName', 'payeeDetails', 'payeeQrUrl', 'amount', 'category', 'project', 'urgency', 'description', 'attachmentUrl', 'billPhotoUrl'];
   fields.forEach((f) => { if (req.body[f] !== undefined) request[f] = req.body[f]; });
+  const listError = await validateLists(request.category, request.project);
+  if (listError) return res.status(400).json({ message: listError });
   const threshold = await Setting.get('directorThreshold', 50000);
   request.needsAdmin = request.amount > threshold;
   await request.save();
